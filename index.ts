@@ -2,12 +2,14 @@ import * as http from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as fs from 'fs';
 import * as p from 'path';
+import * as url from 'url';
 
 const server = http.createServer();
 server.on('request', (req: IncomingMessage, res: ServerResponse) => {
-  const { url, method, headers } = req;
+  const { url: path, method, headers } = req;
   const publicPath = p.resolve(__dirname, 'public');
-  switch (url) {
+  const { pathname } = url.parse(path);
+  switch (pathname) {
     case '/':
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       fs.readFile(p.resolve(publicPath, 'index.html'), (error, data) => {
@@ -26,9 +28,12 @@ server.on('request', (req: IncomingMessage, res: ServerResponse) => {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
       fs.readFile(p.resolve(publicPath, 'style.css'), (error, data) => {
         if (error) throw error;
-        res.end(data.toString())
+        res.end(data.toString());
       });
       break;
+    default:
+      res.statusCode = 404;
+      res.end();
   }
 });
 
