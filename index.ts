@@ -5,36 +5,24 @@ import * as p from 'path';
 import * as url from 'url';
 
 const server = http.createServer();
+const publicPath = p.resolve(__dirname, 'public');
+
 server.on('request', (req: IncomingMessage, res: ServerResponse) => {
   const { url: path, method, headers } = req;
-  const publicPath = p.resolve(__dirname, 'public');
   const { pathname } = url.parse(path);
-  switch (pathname) {
-    case '/':
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      fs.readFile(p.resolve(publicPath, 'index.html'), (error, data) => {
-        if (error) throw error;
-        res.end(data.toString());
-      });
-      break;
-    case '/main.js':
-      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
-      fs.readFile(p.resolve(publicPath, 'main.js'), (error, data) => {
-        if (error) throw error;
-        res.end(data.toString());
-      });
-      break;
-    case '/style.css':
-      res.setHeader('Content-Type', 'text/css; charset=utf-8');
-      fs.readFile(p.resolve(publicPath, 'style.css'), (error, data) => {
-        if (error) throw error;
-        res.end(data.toString());
-      });
-      break;
-    default:
-      res.statusCode = 404;
-      res.end();
+  let filename = pathname.substr(1);
+  if (!filename) {
+    filename = 'index.html';
   }
+  fs.readFile(p.resolve(publicPath, filename), (error, data) => {
+    if (error) {
+      res.setHeader('Content-Type','text/plain; charset=utf-8')
+      res.statusCode = 404;
+      res.end('访问的路径文件不存在');
+    } else {
+      res.end(data);
+    }
+  });
 });
 
 server.listen(8888, () => {
