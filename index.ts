@@ -36,6 +36,7 @@ server.on('request', (req: IncomingMessage, res: ServerResponse) => {
       }
       console.log(error);
     } else {
+      res.setHeader('Cache-Control','public, max-age=31536000')
       res.end(data);
     }
   });
