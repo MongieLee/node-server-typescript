@@ -16,9 +16,20 @@ server.on('request', (req: IncomingMessage, res: ServerResponse) => {
   }
   fs.readFile(p.resolve(publicPath, filename), (error, data) => {
     if (error) {
-      res.setHeader('Content-Type','text/plain; charset=utf-8')
-      res.statusCode = 404;
-      res.end('访问的路径文件不存在');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      if (error.errno === -2) {
+        res.statusCode = 404;
+        fs.readFile(p.resolve(publicPath, '404.html'), (error, data) => {
+          res.end(data);
+        });
+      } else if (error.errno === -21){
+        res.statusCode = 403
+        res.end('无权查看目录')
+      }else {
+        res.statusCode = 500;
+        res.end('服务器繁忙');
+      }
+      console.log(error);
     } else {
       res.end(data);
     }
